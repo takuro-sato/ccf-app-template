@@ -402,6 +402,41 @@
         }
       }
     },
+    "/double": {
+      "post": {
+        "js_module": "endpoints/double.js",
+        "js_function": "double",
+        "forwarding_required": "always",
+        "authn_policies": ["user_cert"],
+        "mode": "readonly",
+        "openapi": {
+          "responses": {
+            "200": {
+              "description": "Ok",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array"
+                  }
+                }
+              }
+            }
+          },
+          "security": [],
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/proto": {
       "post": {
         "js_module": "endpoints/proto.js",
