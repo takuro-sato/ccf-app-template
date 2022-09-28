@@ -124,6 +124,25 @@ $ docker run ccf-app-template:virtual
 
 ---
 
+## TS
+```bash
+# Install nvm
+$ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+# Then follow the instruction in the output
+
+# Use v16.17.0 as default
+$ nvm install v16.17.0
+
+# Build TS project
+$ cd ts
+$ npm i
+$ npm run build
+
+# Run the app
+$ /opt/ccf/bin/sandbox.sh --js-app-bundle ./dist/
+# 
+```
+
 ## Dependencies
 
 If this repository is checked out on a bare VM (e.g. [for SGX deployments](https://docs.microsoft.com/en-us/azure/confidential-computing/quick-create-portal)), the dependencies required to build and run the C++ app can be installed as follows:
