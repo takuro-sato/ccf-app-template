@@ -85,3 +85,56 @@ export function balance(
   // return { body: { balance, userId } };
   return { body: { balance } };
 }
+
+// TODO: Fix `any`s
+type TransferRequest = any;
+type TransferResponse = any;
+
+interface Caller {
+  id: string
+}
+
+export function transfer(
+  request: ccfapp.Request<BalanceRequest>
+): ccfapp.Response<BalanceResponse> {
+  // TODO: Do it in a proper way
+  const caller = request.caller as unknown as Caller;
+  const userId = caller.id as string;
+
+  if (!validateUserId(request.params.user_id)) {
+    return {
+      statusCode: 404,
+    };
+  }
+  const userIdTo = request.params.user_id;
+
+  // TODO: Need validate body (e.g. parse failed, is value integer?)
+  let body = request.body.json();
+  const value = parseInt(body.value);
+
+  // TODO: Duplicated 'Read current balance'
+  let balance = 0;
+  if (logMap.has(userId))
+  {
+    balance += logMap.get(userId).balance;
+  }
+
+  if (value > balance)
+  {
+    return { statusCode: 400, body: "Balance is not enough" };
+  }
+
+  logMap.set(userId, { balance: balance - value });
+
+  let balanceTo = 0;
+  if (logMap.has(userIdTo))
+  {
+    balanceTo += logMap.get(userIdTo).balance;
+  }
+
+  balanceTo += value;
+
+  logMap.set(userIdTo, { balance: balanceTo });
+
+  return { body: "OK" };
+}

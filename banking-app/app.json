@@ -483,6 +483,39 @@
         }
       }
     },
+    "/transfer/{user_id}": {
+      "post": {
+        "js_module": "endpoints/banking.js",
+        "js_function": "transfer",
+        "forwarding_required": "always",
+        "authn_policies": ["user_cert"],
+        "mode": "readwrite",
+        "openapi": {
+          "responses": {
+            "200": {
+              "description": "Ok"
+            }
+          },
+          "security": [],
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "chain": {
+                      "value": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/proto": {
       "post": {
         "js_module": "endpoints/proto.js",
