@@ -140,13 +140,20 @@ $ npm run build
 
 # Run the app
 $ /opt/ccf/bin/sandbox.sh --js-app-bundle ./dist/
-# 
 ```
 
 ## banking-app
 
-For now, it requires a terrible workaround.
-You need to replace `/opt/ccf/bin/resolve.js` with https://github.com/microsoft/CCF/blob/main/samples/constitutions/default/resolve.js.
+### How to run the demo
+
+```bash
+$ cd banking-app
+$ ./prepare_demo.sh
+
+# In another terminal
+$ cd banking-app
+$ ./demo.sh
+```
 
 ## Dependencies
 
