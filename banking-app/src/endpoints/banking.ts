@@ -50,13 +50,9 @@ export function deposit(
   logMap.set(userId, { balance });
 
   // DELETE_ME: debug
-  // const strUserId = request.params.user_id
-  // return { body: { userId, strUserId } };
+  // return { body: { userId, balance } };
 
   return { body: "OK" };
-
-  // DELETE_ME: Just memo
-  // return { body: JSON.stringify(request) + "!!!" +  request.params.user_id };
 }
 
 // TODO: Fix `any`s
