@@ -437,24 +437,17 @@
         }
       }
     },
-    "/deposit": {
+    "/deposit/{user_id}": {
       "post": {
-        "js_module": "endpoints/deposit.js",
+        "js_module": "endpoints/banking.js",
         "js_function": "deposit",
         "forwarding_required": "always",
         "authn_policies": ["member_cert"],
-        "mode": "readonly",
+        "mode": "readwrite",
         "openapi": {
           "responses": {
             "200": {
-              "description": "Ok",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array"
-                  }
-                }
-              }
+              "description": "Ok"
             }
           },
           "security": [],
@@ -469,6 +462,24 @@
               }
             }
           }
+        }
+      }
+    },
+    "/balance/{user_id}": {
+      "get": {
+        "js_module": "endpoints/banking.js",
+        "js_function": "balance",
+        "forwarding_required": "always",
+        "authn_policies": ["user_cert"],
+        "mode": "readonly",
+        "openapi": {
+          "responses": {
+            "200": {
+              "description": "Ok"
+            }
+          },
+          "security": [],
+          "parameters": []
         }
       }
     },
