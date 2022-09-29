@@ -143,6 +143,11 @@ $ /opt/ccf/bin/sandbox.sh --js-app-bundle ./dist/
 # 
 ```
 
+## banking-app
+
+For now, it requires a terrible workaround.
+You need to replace `/opt/ccf/bin/resolve.js` with https://github.com/microsoft/CCF/blob/main/samples/constitutions/default/resolve.js.
+
 ## Dependencies
 
 If this repository is checked out on a bare VM (e.g. [for SGX deployments](https://docs.microsoft.com/en-us/azure/confidential-computing/quick-create-portal)), the dependencies required to build and run the C++ app can be installed as follows:
