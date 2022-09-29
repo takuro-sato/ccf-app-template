@@ -9,10 +9,11 @@ interface LogItem {
 }
 
 interface LogEntry extends LogItem {
-  id: number;
+  id: string;
 }
 
-const logMap = ccfapp.typedKv("accounts", ccfapp.uint32, ccfapp.json<LogItem>());
+// TODO: is this private?
+const logMap = ccfapp.typedKv("accounts", ccfapp.string, ccfapp.json<LogItem>());
 
 function validateUserId (userId: any): boolean {
   // TODO: Check type
@@ -33,7 +34,7 @@ export function deposit(
   let body = request.body.json();
   const value = parseInt(body.value);
 
-  const userId = parseInt(request.params.user_id);
+  const userId = request.params.user_id;
 
   // TODO: Check if this is the good way to do transaction with read and write
   let balance = 0;
@@ -48,6 +49,10 @@ export function deposit(
 
   logMap.set(userId, { balance });
 
+  // DELETE_ME: debug
+  // const strUserId = request.params.user_id
+  // return { body: { userId, strUserId } };
+
   return { body: "OK" };
 
   // DELETE_ME: Just memo
@@ -58,16 +63,16 @@ export function deposit(
 type BalanceRequest = any;
 type BalanceResponse = any;
 
+interface Caller {
+  id: string
+}
+
 export function balance(
   request: ccfapp.Request<BalanceRequest>
 ): ccfapp.Response<BalanceResponse> {
-  if (!validateUserId(request.params.user_id)) {
-    return {
-      statusCode: 404,
-    };
-  }
-
-  const userId = parseInt(request.params.user_id);
+  // TODO: Do it in a proper way
+  const caller = request.caller as unknown as Caller;
+  const userId = caller.id as string;
 
   // TODO: Duplicated 'Read current balance'
   let balance = 0;
@@ -76,5 +81,7 @@ export function balance(
     balance += logMap.get(userId).balance;
   }
 
+  // DELETEME
+  // return { body: { balance, userId } };
   return { body: { balance } };
 }

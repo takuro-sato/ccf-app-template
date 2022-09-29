@@ -465,7 +465,7 @@
         }
       }
     },
-    "/balance/{user_id}": {
+    "/balance": {
       "get": {
         "js_module": "endpoints/banking.js",
         "js_function": "balance",
