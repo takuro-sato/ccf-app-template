@@ -34,13 +34,23 @@ echo $proposal0_id
 # Vote by member 2
 /opt/ccf/bin/scurl.sh https://127.0.0.1:8000/gov/proposals/$proposal1_id/ballots --cacert service_cert.pem --signing-key member2_privk.pem --signing-cert member2_cert.pem --data-binary @vote_accept.json -H "content-type: application/json" | jq
 
+
+# Create accounts
+account_type0='current_account'
+account_type1='saving_account'
+# Account for user 0
+curl https://127.0.0.1:8000/app/account/$user0_id/$account_type0 -X PUT --cacert service_cert.pem --cert member0_cert.pem --key member0_privk.pem
+
+# Account for user 1
+curl https://127.0.0.1:8000/app/account/$user1_id/$account_type1 -X PUT --cacert service_cert.pem --cert member0_cert.pem --key member0_privk.pem
+
 # Deposit: user0, 100
-curl https://127.0.0.1:8000/app/deposit/$user0_id -X POST --cacert service_cert.pem --cert member0_cert.pem --key member0_privk.pem -H "Content-Type: application/json" --data-binary '{ "value": 100}'
+curl https://127.0.0.1:8000/app/deposit/$user0_id/$account_type0 -X POST --cacert service_cert.pem --cert member0_cert.pem --key member0_privk.pem -H "Content-Type: application/json" --data-binary '{ "value": 100 }'
 
 # Transfer 40 from user0 to user1
-curl https://127.0.0.1:8000/app/transfer/$user1_id -X POST --cacert service_cert.pem --cert user0_cert.pem --key user0_privk.pem -H "Content-Type: application/json" --data-binary '{ "value": 40}'
+curl https://127.0.0.1:8000/app/transfer/$account_type0 -X POST --cacert service_cert.pem --cert user0_cert.pem --key user0_privk.pem -H "Content-Type: application/json" --data-binary "{ \"value\": 40, \"user_id_to\": \"$user1_id\", \"account_name_to\": \"$account_type1\" }"
 
 # Check balance
-curl https://127.0.0.1:8000/app/balance -X GET --cacert service_cert.pem --cert user0_cert.pem --key user0_privk.pem
+curl https://127.0.0.1:8000/app/balance/$account_type0 -X GET --cacert service_cert.pem --cert user0_cert.pem --key user0_privk.pem
 
-curl https://127.0.0.1:8000/app/balance -X GET --cacert service_cert.pem --cert user1_cert.pem --key user1_privk.pem
+curl https://127.0.0.1:8000/app/balance/$account_type1 -X GET --cacert service_cert.pem --cert user1_cert.pem --key user1_privk.pem

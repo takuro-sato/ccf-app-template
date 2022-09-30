@@ -1,44 +1,85 @@
 import * as ccfapp from "@microsoft/ccf-app";
 
-// TODO: Fix `any`s
-type DepositRequest = any;
-type DepositResponse = any;
-
-const accountMap = ccfapp.typedKv("accounts", ccfapp.string, ccfapp.uint32);
-
-function validateUserId (userId: any): boolean {
-  // TODO: Check type
+function validateUserId (userId: string): boolean {
   // TODO: Check if user exists
   return true;
 }
 
-export function deposit(
-  request: ccfapp.Request<DepositRequest>
-): ccfapp.Response<DepositResponse> {
-  if (!validateUserId(request.params.user_id)) {
+function validateAccountName (accountName: string): boolean {
+  // TODO: Check if it's valid name
+  return true;
+}
+
+
+// TODO: Fix `any`s
+type CreateAccountRequest = any;
+type CreateAccountResponse = any;
+
+export function createAccount(
+  request: ccfapp.Request<CreateAccountRequest>
+): ccfapp.Response<CreateAccountResponse> {
+  const userId = request.params.user_id;
+  if (!validateUserId(userId)) {
     return {
-      statusCode: 404,
+      statusCode: 404
     };
   }
 
-  // TODO: Need validate body (e.g. parse failed, is value integer?)
-  let body = request.body.json();
-  const value = parseInt(body.value);
+  const accountToBalance = ccfapp.typedKv(`user_accounts:${userId}`, ccfapp.string, ccfapp.uint32);
 
-  const userId = request.params.user_id;
-
-  // TODO: Check if this is the good way to do transaction with read and write
-  let balance = 0;
-  if (accountMap.has(userId))
-  {
-    balance += accountMap.get(userId);
+  const accountName = request.params.account_name;
+  if (!validateAccountName(request.params.account_name)) {
+    return {
+      statusCode: 400
+    };
   }
 
-  // Add deposit value to balance
-  balance += value;
-  
+  if (accountToBalance.has(accountName)) {
+    // Nothing to do
+    return { body: "OK" };
+  }
 
-  accountMap.set(userId, balance);
+  // Initial balance should be 0.
+  accountToBalance.set(accountName, 0);
+
+  console.log('Create Account Completed');
+
+  return { body: "OK" };
+}
+
+// TODO: Fix `any`s
+type DepositRequest = any;
+type DepositResponse = any;
+
+export function deposit(
+  request: ccfapp.Request<DepositRequest>
+): ccfapp.Response<DepositResponse> {
+  // TODO: Need to validate body (e.g. parse failed, is value integer?)
+  const body = request.body.json();
+
+  const userId = request.params.user_id;
+  if (!validateUserId(userId)) {
+    return {
+      statusCode: 404
+    };
+  }
+
+  const accountName = request.params.account_name;
+  if (!validateAccountName(accountName)) {
+    return {
+      statusCode: 400
+    };
+  }
+
+  const value = parseInt(body.value);
+
+  const accountToBalance = ccfapp.typedKv(`user_accounts:${userId}`, ccfapp.string, ccfapp.uint32);
+
+  if (!accountToBalance.has(accountName)) {
+    return { statusCode: 404 }; 
+  }
+
+  accountToBalance.set(accountName, accountToBalance.get(accountName) + value);
 
   console.log('Deposit Completed');
 
@@ -60,16 +101,21 @@ export function balance(
   const caller = request.caller as unknown as Caller;
   const userId = caller.id as string;
 
-  // TODO: Duplicated 'Read current balance'
-  let balance = 0;
-  if (accountMap.has(userId))
-  {
-    balance += accountMap.get(userId);
+  const accountName = request.params.account_name;
+  if (!validateAccountName(accountName)) {
+    return {
+      statusCode: 400
+    };
   }
 
-  // DELETEME
-  // return { body: { balance, userId } };
-  return { body: { balance } };
+  // TODO: Duplicated
+  const accountToBalance = ccfapp.typedKv(`user_accounts:${userId}`, ccfapp.string, ccfapp.uint32);
+
+  if (!accountToBalance.has(accountName)) {
+    return { statusCode: 404 }; 
+  }
+
+  return { body: { balance: accountToBalance.get(accountName) } };
 }
 
 // TODO: Fix `any`s
@@ -83,45 +129,56 @@ interface Caller {
 export function transfer(
   request: ccfapp.Request<BalanceRequest>
 ): ccfapp.Response<BalanceResponse> {
+  // TODO: Need to validate body (e.g. parse failed, is value integer?)
+  const body = request.body.json();
 
   // TODO: Do it in a proper way
   const caller = request.caller as unknown as Caller;
   const userId = caller.id as string;
 
-  if (!validateUserId(request.params.user_id)) {
+  const accountName = request.params.account_name;
+  if (!validateAccountName(accountName)) {
     return {
-      statusCode: 404,
+      statusCode: 400
     };
   }
-  const userIdTo = request.params.user_id;
-
-  // TODO: Need validate body (e.g. parse failed, is value integer?)
-  let body = request.body.json();
+  
   const value = parseInt(body.value);
 
-  // TODO: Duplicated 'Read current balance'
-  let balance = 0;
-  if (accountMap.has(userId))
-  {
-    balance += accountMap.get(userId);
+  const accountNameTo = body.account_name_to;
+
+  const userIdTo = body.user_id_to;
+
+  if (!validateUserId(userIdTo)) {
+    return {
+      statusCode: 404
+    };
   }
+
+  // TODO: Duplicated
+  const accountToBalance = ccfapp.typedKv(`user_accounts:${userId}`, ccfapp.string, ccfapp.uint32);
+
+  if (!accountToBalance.has(accountName)) {
+    return { statusCode: 404 }; 
+  }
+
+  // TODO: Duplicated 'Read current balance'
+  const balance = accountToBalance.get(accountName);
 
   if (value > balance)
   {
     return { statusCode: 400, body: "Balance is not enough" };
   }
 
-  accountMap.set(userId, balance - value);
+  accountToBalance.set(accountName, balance - value);
 
-  let balanceTo = 0;
-  if (accountMap.has(userIdTo))
-  {
-    balanceTo += accountMap.get(userIdTo);
+  const accountToBalanceTo = ccfapp.typedKv(`user_accounts:${userIdTo}`, ccfapp.string, ccfapp.uint32);
+
+  if (!accountToBalanceTo.has(accountNameTo)) {
+    return { statusCode: 404 }; 
   }
 
-  balanceTo += value;
-
-  accountMap.set(userIdTo, balanceTo);
+  accountToBalanceTo.set(accountNameTo, accountToBalanceTo.get(accountNameTo) + value);
 
   console.log('Transfer Completed');
 

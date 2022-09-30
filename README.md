@@ -148,11 +148,13 @@ $ /opt/ccf/bin/sandbox.sh --js-app-bundle ./dist/
 
 ```bash
 $ cd banking-app
+$ npm i # Necessary only for the first time
 $ ./prepare_demo.sh
 
 # In another terminal
 $ cd banking-app
 $ ./demo.sh
+$ ./show_app_log.sh # You can see the application log
 ```
 
 ## Dependencies

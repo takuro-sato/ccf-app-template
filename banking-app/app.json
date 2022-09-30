@@ -1,6 +1,24 @@
 {
   "endpoints": {
-    "/deposit/{user_id}": {
+    "/account/{user_id}/{account_name}": {
+      "put": {
+        "js_module": "endpoints/banking.js",
+        "js_function": "createAccount",
+        "forwarding_required": "always",
+        "authn_policies": ["member_cert"],
+        "mode": "readwrite",
+        "openapi": {
+          "responses": {
+            "200": {
+              "description": "Ok"
+            }
+          },
+          "security": [],
+          "parameters": []
+        }
+      }
+    },
+    "/deposit/{user_id}/{account_name}": {
       "post": {
         "js_module": "endpoints/banking.js",
         "js_function": "deposit",
@@ -33,7 +51,7 @@
         }
       }
     },
-    "/balance": {
+    "/balance/{account_name}": {
       "get": {
         "js_module": "endpoints/banking.js",
         "js_function": "balance",
@@ -51,7 +69,7 @@
         }
       }
     },
-    "/transfer/{user_id}": {
+    "/transfer/{account_name}": {
       "post": {
         "js_module": "endpoints/banking.js",
         "js_function": "transfer",
@@ -74,6 +92,12 @@
                   "properties": {
                     "value": {
                       "type": "number"
+                    },
+                    "user_id_to": {
+                      "type": "string"
+                    },
+                    "account_name_to": {
+                      "type": "string"
                     }
                   },
                   "type": "object"
