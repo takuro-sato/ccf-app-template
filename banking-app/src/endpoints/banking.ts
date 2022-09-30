@@ -4,11 +4,7 @@ import * as ccfapp from "@microsoft/ccf-app";
 type DepositRequest = any;
 type DepositResponse = any;
 
-interface AccountData {
-  balance: number;
-}
-
-const accountMap = ccfapp.typedKv("accounts", ccfapp.string, ccfapp.json<AccountData>());
+const accountMap = ccfapp.typedKv("accounts", ccfapp.string, ccfapp.uint32);
 
 function validateUserId (userId: any): boolean {
   // TODO: Check type
@@ -35,14 +31,14 @@ export function deposit(
   let balance = 0;
   if (accountMap.has(userId))
   {
-    balance += accountMap.get(userId).balance;
+    balance += accountMap.get(userId);
   }
 
   // Add deposit value to balance
   balance += value;
   
 
-  accountMap.set(userId, { balance });
+  accountMap.set(userId, balance);
 
   console.log('Deposit Completed');
 
@@ -68,7 +64,7 @@ export function balance(
   let balance = 0;
   if (accountMap.has(userId))
   {
-    balance += accountMap.get(userId).balance;
+    balance += accountMap.get(userId);
   }
 
   // DELETEME
@@ -107,7 +103,7 @@ export function transfer(
   let balance = 0;
   if (accountMap.has(userId))
   {
-    balance += accountMap.get(userId).balance;
+    balance += accountMap.get(userId);
   }
 
   if (value > balance)
@@ -115,17 +111,17 @@ export function transfer(
     return { statusCode: 400, body: "Balance is not enough" };
   }
 
-  accountMap.set(userId, { balance: balance - value });
+  accountMap.set(userId, balance - value);
 
   let balanceTo = 0;
   if (accountMap.has(userIdTo))
   {
-    balanceTo += accountMap.get(userIdTo).balance;
+    balanceTo += accountMap.get(userIdTo);
   }
 
   balanceTo += value;
 
-  accountMap.set(userIdTo, { balance: balanceTo });
+  accountMap.set(userIdTo, balanceTo);
 
   console.log('Transfer Completed');
 
