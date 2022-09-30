@@ -9,7 +9,7 @@
         "mode": "readwrite",
         "openapi": {
           "responses": {
-            "200": {
+            "204": {
               "description": "Ok"
             }
           },
@@ -27,7 +27,7 @@
         "mode": "readwrite",
         "openapi": {
           "responses": {
-            "200": {
+            "204": {
               "description": "Ok"
             }
           },
@@ -78,7 +78,7 @@
         "mode": "readwrite",
         "openapi": {
           "responses": {
-            "200": {
+            "204": {
               "description": "Ok"
             }
           },

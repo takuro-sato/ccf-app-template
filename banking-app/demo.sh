@@ -37,7 +37,7 @@ echo $proposal0_id
 
 # Create accounts
 account_type0='current_account'
-account_type1='saving_account'
+account_type1='savings_account'
 # Account for user 0
 curl https://127.0.0.1:8000/app/account/$user0_id/$account_type0 -X PUT --cacert service_cert.pem --cert member0_cert.pem --key member0_privk.pem
 
