@@ -4,16 +4,11 @@ import * as ccfapp from "@microsoft/ccf-app";
 type DepositRequest = any;
 type DepositResponse = any;
 
-interface LogItem {
+interface AccountData {
   balance: number;
 }
 
-interface LogEntry extends LogItem {
-  id: string;
-}
-
-// TODO: is this private?
-const logMap = ccfapp.typedKv("accounts", ccfapp.string, ccfapp.json<LogItem>());
+const accountMap = ccfapp.typedKv("accounts", ccfapp.string, ccfapp.json<AccountData>());
 
 function validateUserId (userId: any): boolean {
   // TODO: Check type
@@ -38,19 +33,18 @@ export function deposit(
 
   // TODO: Check if this is the good way to do transaction with read and write
   let balance = 0;
-  if (logMap.has(userId))
+  if (accountMap.has(userId))
   {
-    balance += logMap.get(userId).balance;
+    balance += accountMap.get(userId).balance;
   }
 
   // Add deposit value to balance
   balance += value;
   
 
-  logMap.set(userId, { balance });
+  accountMap.set(userId, { balance });
 
-  // DELETE_ME: debug
-  // return { body: { userId, balance } };
+  console.log('Deposit Completed');
 
   return { body: "OK" };
 }
@@ -72,9 +66,9 @@ export function balance(
 
   // TODO: Duplicated 'Read current balance'
   let balance = 0;
-  if (logMap.has(userId))
+  if (accountMap.has(userId))
   {
-    balance += logMap.get(userId).balance;
+    balance += accountMap.get(userId).balance;
   }
 
   // DELETEME
@@ -93,6 +87,7 @@ interface Caller {
 export function transfer(
   request: ccfapp.Request<BalanceRequest>
 ): ccfapp.Response<BalanceResponse> {
+
   // TODO: Do it in a proper way
   const caller = request.caller as unknown as Caller;
   const userId = caller.id as string;
@@ -110,9 +105,9 @@ export function transfer(
 
   // TODO: Duplicated 'Read current balance'
   let balance = 0;
-  if (logMap.has(userId))
+  if (accountMap.has(userId))
   {
-    balance += logMap.get(userId).balance;
+    balance += accountMap.get(userId).balance;
   }
 
   if (value > balance)
@@ -120,17 +115,19 @@ export function transfer(
     return { statusCode: 400, body: "Balance is not enough" };
   }
 
-  logMap.set(userId, { balance: balance - value });
+  accountMap.set(userId, { balance: balance - value });
 
   let balanceTo = 0;
-  if (logMap.has(userIdTo))
+  if (accountMap.has(userIdTo))
   {
-    balanceTo += logMap.get(userIdTo).balance;
+    balanceTo += accountMap.get(userIdTo).balance;
   }
 
   balanceTo += value;
 
-  logMap.set(userIdTo, { balance: balanceTo });
+  accountMap.set(userIdTo, { balance: balanceTo });
+
+  console.log('Transfer Completed');
 
   return { body: "OK" };
 }
