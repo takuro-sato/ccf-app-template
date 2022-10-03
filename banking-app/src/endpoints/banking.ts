@@ -1,4 +1,5 @@
 import * as ccfapp from "@microsoft/ccf-app";
+import { ccf } from "@microsoft/ccf-app/global";
 
 
 function getAccountTable (userId: string): ccfapp.TypedKvMap<string, number> {
@@ -15,15 +16,11 @@ function getCallerId (request: ccfapp.Request<any>): string {
   return caller.id;
 }
 
-// We are not interested in the content for this app
-// interface UserDetails {}
-
 function validateUserId (userId: string): boolean {
-  // TODO: Check if user exists
+  // Check if user exists
   // https://microsoft.github.io/CCF/main/audit/builtin_maps.html#users-info
-  // const usersInfo = ccfapp.typedKv("public:ccf.gov.users.info", ccfapp.string, ccfapp.json<UserDetails>());
-  // return usersInfo.has(userId);
-  return true;
+  const usersCerts = ccfapp.typedKv("public:ccf.gov.users.certs", ccfapp.arrayBuffer, ccfapp.arrayBuffer);
+  return usersCerts.has(ccf.strToBuf(userId));
 }
 
 type CreateAccountRequest = null;
