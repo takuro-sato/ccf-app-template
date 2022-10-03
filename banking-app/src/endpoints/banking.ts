@@ -23,6 +23,10 @@ function validateUserId (userId: string): boolean {
   return usersCerts.has(ccf.strToBuf(userId));
 }
 
+function isPositiveInteger (value: any): boolean {
+  return Number.isInteger(value) && value > 0;
+}
+
 type CreateAccountRequest = null;
 type CreateAccountResponse = null;
 
@@ -67,22 +71,21 @@ export function deposit(
   request: ccfapp.Request<DepositRequest>
 ): ccfapp.Response<DepositResponse> {
   let body;
-  let value;
   try {
     body = request.body.json();
-    value = parseInt(body.value);
   } catch {
     return {
       statusCode: 400
     };
   }
 
-  if (value < 0) {
+  const value = body.value
+
+  if (!isPositiveInteger(value)) {
     return {
       statusCode: 400
     };
   }
-
 
   const userId = request.params.user_id;
   if (!validateUserId(userId)) {
@@ -141,17 +144,17 @@ export function transfer(
   request: ccfapp.Request<TransferRequest>
 ): ccfapp.Response<TransferResponse> {
   let body;
-  let value;
   try {
     body = request.body.json();
-    value = parseInt(body.value);
   } catch {
     return {
       statusCode: 400
     };
   }
 
-  if (value < 0) {
+  const value = body.value
+
+  if (!isPositiveInteger(value)) {
     return {
       statusCode: 400
     };
