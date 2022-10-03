@@ -157,6 +157,13 @@ $ ./demo.sh
 $ ./show_app_log.sh # You can see the application log
 ```
 
+### How to run test
+```bash
+$ cd banking-app
+$ npm i # Necessary only for the first time
+$ ./test.sh
+```
+
 ## Dependencies
 
 If this repository is checked out on a bare VM (e.g. [for SGX deployments](https://docs.microsoft.com/en-us/azure/confidential-computing/quick-create-portal)), the dependencies required to build and run the C++ app can be installed as follows:
