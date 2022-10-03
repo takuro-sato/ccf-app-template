@@ -57,8 +57,9 @@ check_eq "Transfer: 40 from user0 to user1" "204" "$(curl $server/app/transfer/$
 check_eq "Balance: user0, account_type0" "{\"balance\":60}" "$(curl $server/app/balance/$account_type0 -X GET $(cert_arg "user0") -s)"
 check_eq "Balance: user1, account_type1" "{\"balance\":40}" "$(curl $server/app/balance/$account_type1 -X GET $(cert_arg "user1") -s)"
 
-# Test cases for error handling
+# Test cases for error handling and coner cases
 check_eq "Create account: user0 again" "204" "$(curl $server/app/account/$user0_id/$account_type0 -X PUT $(cert_arg "member0") $only_status_code)"
+check_eq "Create account: user not found" "404" "$(curl $server/app/account/non-existing-user/$account_type0 -X PUT $(cert_arg "member0") $only_status_code)"
 check_eq "Deposit: invalid value (non integer 1)" "400" "$(curl $server/app/deposit/$user0_id/$account_type0 -X POST $(cert_arg "member0") -H "Content-Type: application/json" --data-binary '{ "value": "abc" }' $only_status_code)"
 check_eq "Deposit: invalid value (non integer 2)" "400" "$(curl $server/app/deposit/$user0_id/$account_type0 -X POST $(cert_arg "member0") -H "Content-Type: application/json" --data-binary '{ "value": 100.5 }' $only_status_code)"
 check_eq "Deposit: invalid value (zero)" "400" "$(curl $server/app/deposit/$user0_id/$account_type0 -X POST $(cert_arg "member0") -H "Content-Type: application/json" --data-binary '{ "value": 0 }' $only_status_code)"
