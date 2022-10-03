@@ -8,7 +8,7 @@ npm run build > /dev/null 2>&1
 # Run sandbox. Consider 3 members as 3 banks.
 echo "Starting sandbox..."
 /opt/ccf/bin/sandbox.sh --js-app-bundle ./dist/ --initial-member-count 3 --initial-user-count 2 > /dev/null 2>&1 &
-node_pid=$!
+sandbox_pid=$!
 
 check_eq() {
     local test_name="$1"
@@ -19,7 +19,7 @@ check_eq() {
         echo "[Pass]"
     else
         echo "[Fail]: $expected expected, but got $actual"
-        (kill -9 $node_pid)
+        (kill -9 $sandbox_pid)
         exit 1
     fi
 }
@@ -77,5 +77,5 @@ check_eq "Transfer: accountTo not found" "404" "$(curl $server/app/transfer/$acc
 check_eq "Balance: account not found" "404" "$(curl $server/app/balance/non-existing-account -X GET $(cert_arg "user0") $only_status_code)"
 
 echo "OK"
-kill -9 $node_pid
+kill -9 $sandbox_pid
 exit 0
