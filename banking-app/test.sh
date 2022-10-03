@@ -1,8 +1,15 @@
 #!/bin/bash
 
-# Run prepare_test.sh in another terminal before running this script
+# -------------------------- Preparation --------------------------
 
-# -------------------------- Infra --------------------------
+echo "Building app..."
+npm run build > /dev/null 2>&1
+
+# Run sandbox. Consider 3 members as 3 banks.
+echo "Starting sandbox..."
+/opt/ccf/bin/sandbox.sh --js-app-bundle ./dist/ --initial-member-count 3 --initial-user-count 2 > /dev/null 2>&1 &
+node_pid=$!
+
 check_eq() {
     local test_name="$1"
     local expected="$2"
@@ -12,14 +19,10 @@ check_eq() {
         echo "[Pass]"
     else
         echo "[Fail]: $expected expected, but got $actual"
+        (kill -9 $node_pid)
         exit 1
     fi
 }
-
-
-# -------------------------- Preparation --------------------------
-
-cd workspace/sandbox_common
 
 cert_arg() {
     caller="$1"
@@ -29,6 +32,15 @@ cert_arg() {
 server="https://127.0.0.1:8000"
 only_status_code="-s -o /dev/null -w %{http_code}"
 
+echo "Waiting for the app frontend..."
+# Using the same way as https://github.com/microsoft/CCF/blob/1f26340dea89c06cf615cbd4ec1b32665840ef4e/tests/start_network.py#L94
+while [ "200" != "$(curl $server/app/commit --cacert workspace/sandbox_common/service_cert.pem $only_status_code)" ]
+do
+    sleep 1
+done
+
+cd workspace/sandbox_common
+
 user0_id=$(openssl x509 -in "user0_cert.pem" -noout -fingerprint -sha256 | cut -d "=" -f 2 | sed 's/://g' | awk '{print tolower($0)}')
 user1_id=$(openssl x509 -in "user1_cert.pem" -noout -fingerprint -sha256 | cut -d "=" -f 2 | sed 's/://g' | awk '{print tolower($0)}')
 
@@ -36,6 +48,8 @@ account_type0='current_account'
 account_type1='savings_account'
 
 # -------------------------- Test cases --------------------------
+echo "Test start"
+
 check_eq "Create account: user0" "204" "$(curl $server/app/account/$user0_id/$account_type0 -X PUT $(cert_arg "member0") $only_status_code)"
 check_eq "Create account: user1" "204" "$(curl $server/app/account/$user1_id/$account_type1 -X PUT $(cert_arg "member0") $only_status_code)"
 check_eq "Deposit: user0, 100" "204" "$(curl $server/app/deposit/$user0_id/$account_type0 -X POST $(cert_arg "member0") -H "Content-Type: application/json" --data-binary '{ "value": 100 }' $only_status_code)"
@@ -62,4 +76,5 @@ check_eq "Transfer: accountTo not found" "404" "$(curl $server/app/transfer/$acc
 check_eq "Balance: account not found" "404" "$(curl $server/app/balance/non-existing-account -X GET $(cert_arg "user0") $only_status_code)"
 
 echo "OK"
+kill -9 $node_pid
 exit 0
